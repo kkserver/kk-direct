@@ -1,0 +1,5 @@
+
+in:
+  name: ^output
+  keys: name
+  value: A
