@@ -1,0 +1,10 @@
+
+in:
+  name: kk.uuid.
+  options: 
+    _: =input
+  timeout: 1
+  done: 
+    name: ^output
+    keys: uuid
+    value: =result

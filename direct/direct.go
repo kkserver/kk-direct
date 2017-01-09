@@ -4,6 +4,8 @@ import (
 	"fmt"
 )
 
+var ErrorKeys = []string{"error"}
+
 const ERROR_UNKNOWN = 0x0ffff
 
 type Error struct {
@@ -33,6 +35,7 @@ type IDirect interface {
 	SetOptions(options Options)
 	Exec(ctx IContext) error
 	Done(ctx IContext, name string) error
+	Fail(ctx IContext, err error) error
 	Has(name string) bool
 }
 
@@ -83,6 +86,14 @@ func (D *Direct) Done(ctx IContext, name string) error {
 		}
 	}
 	return nil
+}
+
+func (D *Direct) Fail(ctx IContext, err error) error {
+	if D.Has("fail") {
+		ctx.Set(ErrorKeys, err)
+		return D.Done(ctx, "fail")
+	}
+	return err
 }
 
 func (D *Direct) Has(name string) bool {

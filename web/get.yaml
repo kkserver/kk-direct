@@ -1,0 +1,10 @@
+
+in:
+  name: kk.job.job/version/query
+  options: 
+    _: =input
+  done:
+    name: ^output
+    keys: versions
+    value: =result
+      

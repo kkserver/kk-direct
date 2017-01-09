@@ -51,4 +51,5 @@ func Openlib() {
 	UseWithType("^direct", reflect.TypeOf(Direct{}))
 	UseWithType("^outlet", reflect.TypeOf(Outlet{}))
 	UseWithType("^output", reflect.TypeOf(Output{}))
+	UseWithType("^var", reflect.TypeOf(Var{}))
 }
