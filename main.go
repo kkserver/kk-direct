@@ -1,6 +1,8 @@
 package main
 
 import (
+	"crypto/md5"
+	"encoding/hex"
 	"github.com/kkserver/kk-direct/direct"
 	KK "github.com/kkserver/kk-direct/direct/kk"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
@@ -131,6 +133,8 @@ func main() {
 					ip = r.RemoteAddr
 				}
 
+				ip = strings.Split(ip, ":")[0]
+
 				var cookie, err = r.Cookie("kk")
 
 				if err != nil {
@@ -162,7 +166,7 @@ func main() {
 					app.Handle(&a, &task)
 				})
 
-				ctx.Set([]string{"remoteAddr"}, ip)
+				ctx.Set([]string{"clientIp"}, ip)
 			}
 
 			ctx.Set([]string{"code"}, code)
