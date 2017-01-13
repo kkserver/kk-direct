@@ -2,6 +2,7 @@ package direct
 
 import (
 	"fmt"
+	"log"
 )
 
 var ErrorKeys = []string{"error"}
@@ -74,6 +75,7 @@ func (D *Direct) Exec(ctx IContext) error {
 }
 
 func (D *Direct) Done(ctx IContext, name string) error {
+	log.Println(D.Options().Name(), name)
 	v, ok := D.Options()[name]
 	if ok {
 		vv, ok := v.(Options)

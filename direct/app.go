@@ -32,16 +32,22 @@ func NewApp(options Options) IApp {
 }
 
 func (A *App) Open(options Options) (IDirect, error) {
+
 	name := options.Name()
 	v, ok := A.directs[name]
+
 	if ok {
 		return v, nil
 	}
+
 	v, err := Open(options)
+
 	if err != nil {
 		return nil, err
 	}
+
 	v.SetApp(A)
+
 	return v, nil
 }
 

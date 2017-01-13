@@ -1,0 +1,10 @@
+
+in:
+  name: ^output
+  keys: result
+  value: =result
+  done:
+    name: done
+    
+done:
+  name: ^outlet

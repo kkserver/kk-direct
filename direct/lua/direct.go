@@ -62,7 +62,7 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 		}
 	}
 
-	return nil
+	return D.Done(ctx, "done")
 }
 
 func LuaToValue(L *lua.State, i int) interface{} {

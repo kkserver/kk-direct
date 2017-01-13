@@ -4,7 +4,10 @@ in:
   options: 
     _: =input
   done:
-    name: ^output
-    keys: versions
-    value: =result
+    name: ./web/output.yml
+    done:
+      name: ^output
+      keys: ok
+      value: A
+      
       

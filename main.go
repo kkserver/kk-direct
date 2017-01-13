@@ -79,6 +79,8 @@ func main() {
 
 			programs[path] = p
 
+			log.Println(path)
+
 			return p, nil
 		}
 
@@ -89,7 +91,7 @@ func main() {
 			ctx.Begin()
 
 			ctx.Set(KK.AppKeys, &a)
-			ctx.Set(direct.OutputKeys, map[interface{}]interface{}{})
+			ctx.Set(direct.OutputKeys, map[string]interface{}{})
 
 			Lua.ContextOpenlib(ctx)
 
