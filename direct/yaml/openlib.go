@@ -7,7 +7,7 @@ import (
 
 func Openlib() {
 	direct.Use(func(name string, options direct.Options) (direct.IDirect, error) {
-		if strings.HasSuffix(name, ".yaml") {
+		if strings.HasSuffix(name, ".yaml") || strings.HasSuffix(name, ".yml") {
 			v := Direct{}
 			v.SetOptions(options)
 			return &v, nil

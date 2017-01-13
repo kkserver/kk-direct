@@ -52,4 +52,9 @@ func Openlib() {
 	UseWithType("^outlet", reflect.TypeOf(Outlet{}))
 	UseWithType("^output", reflect.TypeOf(Output{}))
 	UseWithType("^var", reflect.TypeOf(Var{}))
+	UseWithType("^required", reflect.TypeOf(Param{}))
+	UseWithType("^regexp", reflect.TypeOf(Param{}))
+	UseWithType("^int", reflect.TypeOf(Param{}))
+	UseWithType("^float", reflect.TypeOf(Param{}))
+	UseWithType("^json", reflect.TypeOf(Param{}))
 }

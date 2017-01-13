@@ -1,9 +1,11 @@
 package direct
 
 import (
-	Value "github.com/kkserver/kk-lib/kk/value"
-	"reflect"
-	"strings"
+	"fmt"
+	"github.com/kkserver/kk-lib/kk/dynamic"
+	"github.com/kkserver/kk-lib/kk/json"
+	"math"
+	"regexp"
 )
 
 var ParamKeys = []string{"param"}
@@ -12,7 +14,7 @@ type Param struct {
 	Direct
 }
 
-func (D *Output) Exec(ctx IContext) error {
+func (D *Param) Exec(ctx IContext) error {
 
 	options := D.Options()
 
@@ -23,37 +25,58 @@ func (D *Output) Exec(ctx IContext) error {
 		ctx.Set(ParamKeys, param)
 	}
 
-	v, ok := options["options"]
+	key := dynamic.StringValue(dynamic.Get(options, "key"), "")
+	vv := ReflectValue(D.App(), ctx, dynamic.Get(options, "value"))
+	errno := int(dynamic.IntValue(dynamic.Get(options, "errno"), ERROR_UNKNOWN))
+	errmsg := dynamic.StringValue(dynamic.Get(options, "errmsg"), fmt.Sprintf("Param %s fail", key))
 
-	if ok {
+	switch options.Name() {
+	case "^required":
+		if dynamic.IsEmpty(vv) {
+			return NewError(errno, errmsg)
+		}
+	case "^regexp":
 
-		opt, ok := v.(direct.Options)
+		pattern, err := regexp.Compile(dynamic.StringValue(dynamic.Get(options, "pattern"), ""))
 
-		if ok {
-			for key, value := range opt {
-
-				vv, ok := value.(direct.Options)
-
-				if ok {
-
-				}
-
-				vv := direct.ReflectValue(D.App(), ctx, value)
-				skey := key.(string)
-				if key == "_" {
-					Value.EachObject(reflect.ValueOf(vv), func(key reflect.Value, vv reflect.Value) bool {
-						if vv.IsValid() && vv.CanInterface() && !vv.IsNil() {
-							data[Value.StringValue(key, "")] = vv.Interface()
-						}
-						return true
-					})
-				} else {
-					data[skey] = vv
-				}
-			}
+		if err != nil {
+			return err
 		}
 
+		if !pattern.MatchString(dynamic.StringValue(vv, "")) {
+			return NewError(errno, errmsg)
+		}
+
+	case "^int":
+		min := dynamic.IntValue(dynamic.Get(options, "min"), math.MinInt64)
+		max := dynamic.IntValue(dynamic.Get(options, "max"), math.MaxInt64)
+		vvv := dynamic.IntValue(vv, 0)
+
+		if vvv < min || vvv > max {
+			return NewError(errno, errmsg)
+		}
+
+		vv = vvv
+	case "^float":
+		min := dynamic.FloatValue(dynamic.Get(options, "min"), float64(math.MinInt64))
+		max := dynamic.FloatValue(dynamic.Get(options, "max"), math.MaxFloat64)
+		vvv := dynamic.FloatValue(vv, 0)
+
+		if vvv < min || vvv > max {
+			return NewError(errno, errmsg)
+		}
+
+		vv = vvv
+	case "^json":
+		var data interface{} = nil
+		err := json.Decode([]byte(dynamic.StringValue(vv, "{}")), &data)
+		if err != nil {
+			return err
+		}
+		vv = data
 	}
+
+	dynamic.Set(param, key, vv)
 
 	return D.Done(ctx, "done")
 }
