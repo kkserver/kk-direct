@@ -4,8 +4,7 @@ import (
 	"github.com/kkserver/kk-direct/direct"
 	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/app/client"
-	Value "github.com/kkserver/kk-lib/kk/value"
-	"reflect"
+	"github.com/kkserver/kk-lib/kk/dynamic"
 	"time"
 )
 
@@ -28,40 +27,17 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 
 		if ok {
 
-			opt := reflect.ValueOf(options)
-
 			task := client.RequestTask{}
 
 			task.Name = options.Name()
-			task.Timeout = time.Duration(Value.IntValue(Value.Get(opt, "timeout"), 1)) * time.Second
-
-			data := map[string]interface{}{}
-
-			task.Request = data
+			task.Timeout = time.Duration(dynamic.IntValue(dynamic.Get(options, "timeout"), 1)) * time.Second
 
 			v, ok = options["options"]
 
 			if ok {
-
-				mdata, ok := v.(direct.Options)
-
-				if ok {
-					for key, value := range mdata {
-						vv := direct.ReflectValue(D.App(), ctx, value)
-						skey := key.(string)
-						if key == "_" {
-							Value.EachObject(reflect.ValueOf(vv), func(key reflect.Value, vv reflect.Value) bool {
-								if vv.IsValid() && vv.CanInterface() && !vv.IsNil() {
-									data[Value.StringValue(key, "")] = vv.Interface()
-								}
-								return true
-							})
-						} else {
-							data[skey] = vv
-						}
-					}
-				}
-
+				task.Request = direct.ReflectValue(D.App(), ctx, v)
+			} else {
+				task.Request = map[interface{}]interface{}{}
 			}
 
 			err := app.Handle(a, &task)

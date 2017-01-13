@@ -89,6 +89,7 @@ func main() {
 			ctx.Begin()
 
 			ctx.Set(KK.AppKeys, &a)
+			ctx.Set(direct.OutputKeys, map[interface{}]interface{}{})
 
 			Lua.ContextOpenlib(ctx)
 

@@ -55,7 +55,14 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 				vv := map[interface{}]interface{}{}
 
 				dynamic.Each(v, func(key interface{}, value interface{}) bool {
-					vv[key] = ReflectValue(app, ctx, value)
+					if key == "_" {
+						dynamic.Each(ReflectValue(app, ctx, value), func(key interface{}, value interface{}) bool {
+							vv[key] = value
+							return true
+						})
+					} else {
+						vv[key] = ReflectValue(app, ctx, value)
+					}
 					return true
 				})
 
