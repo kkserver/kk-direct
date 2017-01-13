@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/aarzilli/golua/lua"
 	"github.com/kkserver/kk-direct/direct"
+	"log"
 )
 
 type Direct struct {
@@ -56,6 +57,8 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 							return vv
 						}
 					}()
+					log.Println("lua", code)
+					log.Println("lua", rs)
 					ctx.Set(direct.ResultKeys, rs)
 				}
 			}

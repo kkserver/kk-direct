@@ -91,6 +91,7 @@ func (D *Direct) Done(ctx IContext, name string) error {
 }
 
 func (D *Direct) Fail(ctx IContext, err error) error {
+	log.Println(D.Options().Name(), "fail", err)
 	if D.Has("fail") {
 		ctx.Set(ErrorKeys, err)
 		return D.Done(ctx, "fail")
