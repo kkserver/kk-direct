@@ -46,6 +46,13 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 				return D.Fail(ctx, err)
 			}
 
+			errno := dynamic.IntValue(dynamic.Get(task.Result, "errno"), 0)
+			errmsg := dynamic.StringValue(dynamic.Get(task.Result, "errmsg"), "")
+
+			if errno != 0 {
+				return D.Fail(ctx, direct.NewError(errno, errmsg))
+			}
+
 			ctx.Set(ResultKeys, task.Result)
 
 			return D.Done(ctx, "done")
