@@ -2,6 +2,7 @@ package yaml
 
 import (
 	"bufio"
+	"fmt"
 	Y "github.com/go-yaml/yaml"
 	"github.com/kkserver/kk-direct/direct"
 	"io"
@@ -30,7 +31,7 @@ func Load(path string) (direct.IApp, error) {
 	err = Y.Unmarshal(data, options)
 
 	if err != nil {
-		return nil, err
+		return nil, direct.NewError(direct.ERROR_UNKNOWN, fmt.Sprintf("%s %s", path, err.Error()))
 	}
 
 	return direct.NewApp(options), nil
