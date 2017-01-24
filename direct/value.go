@@ -2,8 +2,14 @@ package direct
 
 import (
 	"github.com/kkserver/kk-lib/kk/dynamic"
+	"reflect"
 	"strings"
 )
+
+type ValueNil struct {
+}
+
+var Nil = &ValueNil{}
 
 var ResultKeys = []string{"result"}
 
@@ -31,6 +37,7 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 						return err
 					}
 					ctx.Begin()
+					ctx.Set(ResultKeys, Nil)
 					err = v.Exec(ctx)
 					if err != nil {
 						value = err
@@ -44,17 +51,11 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 		}
 
 		{
-			v, ok := value.(map[interface{}]interface{})
-
-			if !ok {
-				v, ok = value.(Options)
-			}
-
-			if ok {
-
+			switch reflect.ValueOf(value).Kind() {
+			case reflect.Map, reflect.Slice, reflect.Ptr:
 				vv := map[interface{}]interface{}{}
 
-				dynamic.Each(v, func(key interface{}, value interface{}) bool {
+				dynamic.Each(value, func(key interface{}, value interface{}) bool {
 					if key == "_" {
 						dynamic.Each(ReflectValue(app, ctx, value), func(key interface{}, value interface{}) bool {
 							vv[key] = value
@@ -67,7 +68,6 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 				})
 
 				return vv
-
 			}
 		}
 

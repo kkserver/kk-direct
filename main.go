@@ -23,6 +23,7 @@ type MainApp struct {
 	Client  *client.Service
 	Address string
 	Timeout int
+	Debug   bool
 }
 
 func main() {
@@ -64,6 +65,19 @@ func main() {
 		programs := map[string]direct.IApp{}
 
 		getProgram := func(path string) (direct.IApp, error) {
+
+			if a.Debug {
+
+				p, err := yaml.Load(path)
+
+				if err != nil {
+					return nil, err
+				}
+
+				log.Println(path)
+
+				return p, nil
+			}
 
 			p, ok := programs[path]
 
@@ -172,6 +186,7 @@ func main() {
 
 			ctx.Set([]string{"code"}, code)
 			ctx.Set([]string{"method"}, r.Method)
+			ctx.Set([]string{"path"}, r.URL.Path)
 			ctx.Set([]string{"host"}, r.Host)
 			ctx.Set([]string{"url"}, r.URL)
 			ctx.Set([]string{"uri"}, r.RequestURI)

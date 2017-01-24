@@ -62,6 +62,8 @@ func (D *Param) Exec(ctx IContext) error {
 		max := dynamic.FloatValue(dynamic.Get(options, "max"), math.MaxFloat64)
 		vvv := dynamic.FloatValue(vv, 0)
 
+		fmt.Println("^float", vvv, min, max)
+
 		if vvv < min || vvv > max {
 			return NewError(errno, errmsg)
 		}

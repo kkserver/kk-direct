@@ -5,6 +5,7 @@ import (
 	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/app/client"
 	"github.com/kkserver/kk-lib/kk/dynamic"
+	"log"
 	"time"
 )
 
@@ -39,6 +40,8 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 			} else {
 				task.Request = map[interface{}]interface{}{}
 			}
+
+			log.Println("kk.direct", task.Request)
 
 			err := app.Handle(a, &task)
 

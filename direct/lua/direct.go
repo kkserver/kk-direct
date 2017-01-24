@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/aarzilli/golua/lua"
 	"github.com/kkserver/kk-direct/direct"
-	"log"
 )
 
 type Direct struct {
@@ -57,9 +56,11 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 							return vv
 						}
 					}()
-					log.Println("lua", code)
-					log.Println("lua", rs)
-					ctx.Set(direct.ResultKeys, rs)
+					if rs == nil {
+						ctx.Set(direct.ResultKeys, direct.Nil)
+					} else {
+						ctx.Set(direct.ResultKeys, rs)
+					}
 				}
 			}
 		}
@@ -122,4 +123,63 @@ func LuaToValue(L *lua.State, i int) interface{} {
 	}
 
 	return vv
+}
+
+func LuaPushValue(L *lua.State, v interface{}) {
+
+	if v == nil {
+		L.PushNil()
+		return
+	}
+
+	{
+		vv, ok := v.(string)
+		if ok {
+			L.PushString(vv)
+			return
+		}
+	}
+
+	{
+		vv, ok := v.(bool)
+		if ok {
+			L.PushBoolean(vv)
+			return
+		}
+	}
+
+	{
+		vv, ok := v.(int64)
+		if ok {
+			L.PushInteger(vv)
+			return
+		}
+	}
+
+	{
+		vv, ok := v.(int)
+		if ok {
+			L.PushInteger(int64(vv))
+			return
+		}
+	}
+
+	{
+		vv, ok := v.(float64)
+		if ok {
+			L.PushNumber(vv)
+			return
+		}
+	}
+
+	{
+		vv, ok := v.(float32)
+		if ok {
+			L.PushNumber(float64(vv))
+			return
+		}
+	}
+
+	L.PushGoStruct(v)
+
 }

@@ -3,8 +3,9 @@ package lua
 import (
 	"github.com/aarzilli/golua/lua"
 	"github.com/kkserver/kk-direct/direct"
+	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
-	Value "github.com/kkserver/kk-lib/kk/value"
+	"log"
 	"reflect"
 )
 
@@ -26,7 +27,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		vv := ctx.Get(keys)
 
-		L.PushGoStruct(vv)
+		LuaPushValue(L, vv)
 
 		return 1
 	})
@@ -44,7 +45,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		vv := ctx.Get(keys)
 
-		L.PushString(Value.StringValue(reflect.ValueOf(vv), ""))
+		L.PushString(dynamic.StringValue(vv, ""))
 
 		return 1
 	})
@@ -62,7 +63,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		vv := ctx.Get(keys)
 
-		L.PushInteger(Value.IntValue(reflect.ValueOf(vv), 0))
+		L.PushInteger(dynamic.IntValue(vv, 0))
 
 		return 1
 	})
@@ -80,7 +81,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		vv := ctx.Get(keys)
 
-		L.PushNumber(Value.FloatValue(reflect.ValueOf(vv), 0))
+		L.PushNumber(dynamic.FloatValue(vv, 0))
 
 		return 1
 	})
@@ -98,13 +99,16 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		vv := ctx.Get(keys)
 
-		L.PushBoolean(Value.BooleanValue(reflect.ValueOf(vv), false))
+		L.PushBoolean(dynamic.BooleanValue(vv, false))
 
 		return 1
 	})
 
 	L.SetGlobal("getBoolean")
 
+	L.NewTable()
+
+	L.PushString("encode")
 	L.PushGoFunction(func(L *lua.State) int {
 
 		keys := []string{}
@@ -122,6 +126,35 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		return 1
 	})
+	L.RawSet(-3)
+
+	L.PushString("decode")
+	L.PushGoFunction(func(L *lua.State) int {
+
+		keys := []string{}
+		top := L.GetTop()
+
+		for i := 0; i < top; i++ {
+			keys = append(keys, L.ToString(-top+i))
+		}
+
+		vv := ctx.Get(keys)
+
+		var v interface{} = nil
+
+		err := json.Decode([]byte(dynamic.StringValue(vv, "{}")), &v)
+
+		log.Println(vv, keys)
+
+		if err != nil {
+			L.PushString(err.Error())
+		} else {
+			LuaPushValue(L, v)
+		}
+
+		return 1
+	})
+	L.RawSet(-3)
 
 	L.SetGlobal("json")
 

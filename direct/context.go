@@ -1,12 +1,11 @@
 package direct
 
 import (
-	Value "github.com/kkserver/kk-lib/kk/value"
-	"reflect"
+	"github.com/kkserver/kk-lib/kk/dynamic"
 )
 
 type Context struct {
-	values []map[string]interface{}
+	values []map[interface{}]interface{}
 }
 
 func NewContext() IContext {
@@ -15,9 +14,9 @@ func NewContext() IContext {
 
 func (C *Context) Begin() {
 	if C.values == nil {
-		C.values = []map[string]interface{}{map[string]interface{}{}}
+		C.values = []map[interface{}]interface{}{map[interface{}]interface{}{}}
 	} else {
-		C.values = append(C.values, map[string]interface{}{})
+		C.values = append(C.values, map[interface{}]interface{}{})
 	}
 }
 
@@ -30,7 +29,7 @@ func (C *Context) End() {
 func (C *Context) Set(keys []string, value interface{}) {
 	if C.values != nil && len(C.values) > 0 {
 		vs := C.values[len(C.values)-1]
-		Value.SetWithKeys(reflect.ValueOf(vs), keys, reflect.ValueOf(value))
+		dynamic.SetWithKeys(vs, keys, value)
 	}
 
 }
@@ -40,9 +39,9 @@ func (C *Context) Get(keys []string) interface{} {
 		idx := len(C.values) - 1
 		for idx >= 0 {
 			vs := C.values[idx]
-			v := Value.GetWithKeys(reflect.ValueOf(vs), keys)
-			if v.IsValid() && v.CanInterface() && !v.IsNil() {
-				return v.Interface()
+			v := dynamic.GetWithKeys(vs, keys)
+			if v != nil {
+				return v
 			}
 			idx = idx - 1
 		}
