@@ -37,9 +37,14 @@ func (C *Context) Set(keys []string, value interface{}) {
 func (C *Context) Get(keys []string) interface{} {
 	if C.values != nil && len(C.values) > 0 {
 		idx := len(C.values) - 1
+		ikey := 0
+		for ikey < len(keys) && idx > 0 && keys[ikey] == "" {
+			idx = idx - 1
+			ikey = ikey + 1
+		}
 		for idx >= 0 {
 			vs := C.values[idx]
-			v := dynamic.GetWithKeys(vs, keys)
+			v := dynamic.GetWithKeys(vs, keys[ikey:])
 			if v != nil {
 				return v
 			}

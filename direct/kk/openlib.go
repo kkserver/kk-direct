@@ -2,6 +2,7 @@ package kk
 
 import (
 	"github.com/kkserver/kk-direct/direct"
+	"reflect"
 	"strings"
 )
 
@@ -14,4 +15,5 @@ func Openlib() {
 		}
 		return nil, nil
 	})
+	direct.UseWithType("^kk.route", reflect.TypeOf(Route{}))
 }

@@ -73,16 +73,12 @@ func LuaToValue(L *lua.State, i int) interface{} {
 
 	var vv interface{} = nil
 
-	if L.IsString(i) {
-		vv = L.ToString(i)
-	} else if L.IsGoStruct(i) {
-		vv = L.ToGoStruct(i)
-	} else if L.IsNumber(i) {
+	switch L.Type(i) {
+	case lua.LUA_TNUMBER:
 		vv = L.ToNumber(i)
-	} else if L.IsBoolean(i) {
+	case lua.LUA_TBOOLEAN:
 		vv = L.ToBoolean(i)
-	} else if L.IsTable(i) {
-
+	case lua.LUA_TTABLE:
 		L.PushValue(i)
 
 		idx := 0
@@ -120,6 +116,12 @@ func LuaToValue(L *lua.State, i int) interface{} {
 		}
 
 		L.Pop(1)
+	default:
+		if L.IsString(i) {
+			vv = L.ToString(i)
+		} else if L.IsGoStruct(i) {
+			vv = L.ToGoStruct(i)
+		}
 	}
 
 	return vv

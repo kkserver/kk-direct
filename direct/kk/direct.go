@@ -6,6 +6,7 @@ import (
 	"github.com/kkserver/kk-lib/kk/app/client"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"log"
+	"strings"
 	"time"
 )
 
@@ -31,6 +32,21 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 			task := client.RequestTask{}
 
 			task.Name = options.Name()
+
+			route := ctx.Get(RouteKeys)
+
+			if route != nil {
+				dynamic.Each(route, func(key interface{}, value interface{}) bool {
+					skey := dynamic.StringValue(key, "")
+					log.Println("skey", skey)
+					if strings.HasPrefix(task.Name, skey) {
+						task.Name = dynamic.StringValue(value, "") + task.Name[len(skey):]
+						return false
+					}
+					return true
+				})
+			}
+
 			task.Timeout = time.Duration(dynamic.IntValue(dynamic.Get(options, "timeout"), 1)) * time.Second
 
 			v, ok = options["options"]
@@ -41,9 +57,11 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 				task.Request = map[interface{}]interface{}{}
 			}
 
-			log.Println("kk.direct", task.Request)
+			log.Println("kk.direct", task.Name, task.Request)
 
 			err := app.Handle(a, &task)
+
+			log.Println("kk.direct", task.Name, task.Result, err)
 
 			if err != nil {
 				return D.Fail(ctx, err)

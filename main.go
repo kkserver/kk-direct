@@ -188,7 +188,14 @@ func main() {
 			ctx.Set([]string{"method"}, r.Method)
 			ctx.Set([]string{"path"}, r.URL.Path)
 			ctx.Set([]string{"host"}, r.Host)
-			ctx.Set([]string{"url"}, r.URL)
+			ctx.Set([]string{"protocol"}, r.Proto)
+			ctx.Set([]string{"referer"}, r.Referer())
+			ctx.Set([]string{"userAgent"}, r.UserAgent())
+			if strings.HasPrefix(r.Proto, "HTTPS/") {
+				ctx.Set([]string{"url"}, "https://"+r.Host+r.RequestURI)
+			} else {
+				ctx.Set([]string{"url"}, "http://"+r.Host+r.RequestURI)
+			}
 			ctx.Set([]string{"uri"}, r.RequestURI)
 			ctx.Set([]string{"input"}, input)
 
