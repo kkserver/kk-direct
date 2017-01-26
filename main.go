@@ -227,15 +227,22 @@ func main() {
 					defer ctx.End()
 					err = p.Exec(ctx)
 					if err != nil {
-						ee, ok := err.(*direct.Error)
+						re, ok := err.(*direct.RedirectError)
 						if ok {
-							b, _ := json.Encode(map[string]interface{}{"errno": ee.Errno, "errmsg": ee.Errmsg})
-							w.Header().Add("Content-Type", "application/json; charset=utf-8")
-							w.Write(b)
+							w.Header().Add("Location", re.Url)
+							w.WriteHeader(http.StatusTemporaryRedirect)
+							w.Write([]byte(""))
 						} else {
-							b, _ := json.Encode(map[string]interface{}{"errno": direct.ERROR_UNKNOWN, "errmsg": err.Error()})
-							w.Header().Add("Content-Type", "application/json; charset=utf-8")
-							w.Write(b)
+							ee, ok := err.(*direct.Error)
+							if ok {
+								b, _ := json.Encode(map[string]interface{}{"errno": ee.Errno, "errmsg": ee.Errmsg})
+								w.Header().Add("Content-Type", "application/json; charset=utf-8")
+								w.Write(b)
+							} else {
+								b, _ := json.Encode(map[string]interface{}{"errno": direct.ERROR_UNKNOWN, "errmsg": err.Error()})
+								w.Header().Add("Content-Type", "application/json; charset=utf-8")
+								w.Write(b)
+							}
 						}
 
 					} else {
@@ -262,8 +269,17 @@ func main() {
 					defer ctx.End()
 					err = p.Exec(ctx)
 					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
-						w.Write([]byte(err.Error()))
+
+						re, ok := err.(*direct.RedirectError)
+						if ok {
+							w.Header().Add("Location", re.Url)
+							w.WriteHeader(http.StatusTemporaryRedirect)
+							w.Write([]byte(""))
+						} else {
+							w.WriteHeader(http.StatusInternalServerError)
+							w.Write([]byte(err.Error()))
+						}
+
 					} else {
 
 						vv := ctx.Get(view.ViewKeys)
@@ -302,8 +318,15 @@ func main() {
 					defer ctx.End()
 					err = p.Exec(ctx)
 					if err != nil {
-						w.WriteHeader(http.StatusInternalServerError)
-						w.Write([]byte(err.Error()))
+						re, ok := err.(*direct.RedirectError)
+						if ok {
+							w.Header().Add("Location", re.Url)
+							w.WriteHeader(http.StatusTemporaryRedirect)
+							w.Write([]byte(""))
+						} else {
+							w.WriteHeader(http.StatusInternalServerError)
+							w.Write([]byte(err.Error()))
+						}
 					} else {
 
 						vv := ctx.Get(view.ViewKeys)

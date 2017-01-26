@@ -57,4 +57,5 @@ func Openlib() {
 	UseWithType("^int", reflect.TypeOf(Param{}))
 	UseWithType("^float", reflect.TypeOf(Param{}))
 	UseWithType("^json", reflect.TypeOf(Param{}))
+	UseWithType("^redirect", reflect.TypeOf(Redirect{}))
 }

@@ -22,6 +22,18 @@ func NewError(errno int, errmsg string) *Error {
 	return &Error{errno, errmsg}
 }
 
+type RedirectError struct {
+	Url string
+}
+
+func (E *RedirectError) Error() string {
+	return E.Url
+}
+
+func NewRedirectError(url string) *RedirectError {
+	return &RedirectError{url}
+}
+
 type IContext interface {
 	Begin()
 	End()

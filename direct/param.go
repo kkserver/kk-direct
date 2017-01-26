@@ -33,7 +33,7 @@ func (D *Param) Exec(ctx IContext) error {
 	switch options.Name() {
 	case "^required":
 		if dynamic.IsEmpty(vv) {
-			return NewError(errno, errmsg)
+			return D.Fail(ctx, NewError(errno, errmsg))
 		}
 	case "^regexp":
 
@@ -44,7 +44,7 @@ func (D *Param) Exec(ctx IContext) error {
 		}
 
 		if !pattern.MatchString(dynamic.StringValue(vv, "")) {
-			return NewError(errno, errmsg)
+			return D.Fail(ctx, NewError(errno, errmsg))
 		}
 
 	case "^int":
@@ -53,7 +53,7 @@ func (D *Param) Exec(ctx IContext) error {
 		vvv := dynamic.IntValue(vv, 0)
 
 		if vvv < min || vvv > max {
-			return NewError(errno, errmsg)
+			return D.Fail(ctx, NewError(errno, errmsg))
 		}
 
 		vv = vvv
@@ -65,7 +65,7 @@ func (D *Param) Exec(ctx IContext) error {
 		fmt.Println("^float", vvv, min, max)
 
 		if vvv < min || vvv > max {
-			return NewError(errno, errmsg)
+			return D.Fail(ctx, NewError(errno, errmsg))
 		}
 
 		vv = vvv
