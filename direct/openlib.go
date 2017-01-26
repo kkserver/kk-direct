@@ -3,6 +3,7 @@ package direct
 import (
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type Library func(name string, options Options) (IDirect, error)
@@ -57,5 +58,31 @@ func Openlib() {
 	UseWithType("^int", reflect.TypeOf(Param{}))
 	UseWithType("^float", reflect.TypeOf(Param{}))
 	UseWithType("^json", reflect.TypeOf(Param{}))
+	UseWithType("^date", reflect.TypeOf(Param{}))
+	UseWithType("^datetime", reflect.TypeOf(Param{}))
+	UseWithType("^day", reflect.TypeOf(Param{}))
+	UseWithType("^now", reflect.TypeOf(Param{}))
+
+	Use(func(name string, options Options) (IDirect, error) {
+
+		if strings.HasPrefix(name, "^day") {
+			return &Param{}, nil
+		}
+
+		if strings.HasPrefix(name, "^datetime") {
+			return &Param{}, nil
+		}
+
+		if strings.HasPrefix(name, "^date") {
+			return &Param{}, nil
+		}
+
+		if strings.HasPrefix(name, "^now") {
+			return &Param{}, nil
+		}
+
+		return nil, nil
+	})
+
 	UseWithType("^redirect", reflect.TypeOf(Redirect{}))
 }

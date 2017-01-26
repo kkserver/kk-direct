@@ -6,6 +6,8 @@ import (
 	"github.com/kkserver/kk-lib/kk/json"
 	"math"
 	"regexp"
+	"strings"
+	"time"
 )
 
 var ParamKeys = []string{"param"}
@@ -69,13 +71,52 @@ func (D *Param) Exec(ctx IContext) error {
 		}
 
 		vv = vvv
+	case "^date":
+		date, err := time.Parse("2006-01-02", dynamic.StringValue(vv, ""))
+		if err != nil {
+			return D.Fail(ctx, err)
+		}
+		vv = date.Unix()
+	case "^datetime":
+		date, err := time.Parse("2006-01-02 15:04:05", dynamic.StringValue(vv, ""))
+		if err != nil {
+			return D.Fail(ctx, err)
+		}
+		vv = date.Unix()
+	case "^now":
+		vv = time.Now().Unix()
+	case "^day":
+		now := time.Now()
+		now = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		vv = now.Unix()
 	case "^json":
 		var data interface{} = nil
 		err := json.Decode([]byte(dynamic.StringValue(vv, "{}")), &data)
 		if err != nil {
-			return err
+			return D.Fail(ctx, err)
 		}
 		vv = data
+	default:
+		if strings.HasPrefix(options.Name(), "^day") {
+			now := time.Now()
+			now = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+			now = now.AddDate(0, 0, int(dynamic.IntValue(options.Name()[4:], 0)))
+			vv = now.Unix()
+		} else if strings.HasPrefix(options.Name(), "^datetime") {
+			date, err := time.Parse("2006-01-02 15:04:05", dynamic.StringValue(vv, ""))
+			if err != nil {
+				return D.Fail(ctx, err)
+			}
+			vv = date.Unix() + dynamic.IntValue(options.Name()[9:], 0)
+		} else if strings.HasPrefix(options.Name(), "^date") {
+			date, err := time.Parse("2006-01-02", dynamic.StringValue(vv, ""))
+			if err != nil {
+				return D.Fail(ctx, err)
+			}
+			vv = date.Unix() + dynamic.IntValue(options.Name()[5:], 0)
+		} else if strings.HasPrefix(options.Name(), "^now") {
+			vv = time.Now().Unix() + dynamic.IntValue(options.Name()[4:], 0)
+		}
 	}
 
 	dynamic.Set(param, key, vv)
