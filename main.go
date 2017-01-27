@@ -240,15 +240,21 @@ func main() {
 							w.WriteHeader(http.StatusTemporaryRedirect)
 							w.Write([]byte(""))
 						} else {
-							ee, ok := err.(*direct.Error)
+							ce, ok := err.(*direct.ContentError)
 							if ok {
-								b, _ := json.Encode(map[string]interface{}{"errno": ee.Errno, "errmsg": ee.Errmsg})
-								w.Header().Add("Content-Type", "application/json; charset=utf-8")
-								w.Write(b)
+								w.Header().Add("Content-Type", ce.ContentType)
+								w.Write([]byte(ce.Content))
 							} else {
-								b, _ := json.Encode(map[string]interface{}{"errno": direct.ERROR_UNKNOWN, "errmsg": err.Error()})
-								w.Header().Add("Content-Type", "application/json; charset=utf-8")
-								w.Write(b)
+								ee, ok := err.(*direct.Error)
+								if ok {
+									b, _ := json.Encode(map[string]interface{}{"errno": ee.Errno, "errmsg": ee.Errmsg})
+									w.Header().Add("Content-Type", "application/json; charset=utf-8")
+									w.Write(b)
+								} else {
+									b, _ := json.Encode(map[string]interface{}{"errno": direct.ERROR_UNKNOWN, "errmsg": err.Error()})
+									w.Header().Add("Content-Type", "application/json; charset=utf-8")
+									w.Write(b)
+								}
 							}
 						}
 
@@ -283,8 +289,14 @@ func main() {
 							w.WriteHeader(http.StatusTemporaryRedirect)
 							w.Write([]byte(""))
 						} else {
-							w.WriteHeader(http.StatusInternalServerError)
-							w.Write([]byte(err.Error()))
+							ce, ok := err.(*direct.ContentError)
+							if ok {
+								w.Header().Add("Content-Type", ce.ContentType)
+								w.Write([]byte(ce.Content))
+							} else {
+								w.WriteHeader(http.StatusInternalServerError)
+								w.Write([]byte(err.Error()))
+							}
 						}
 
 					} else {
@@ -331,8 +343,14 @@ func main() {
 							w.WriteHeader(http.StatusTemporaryRedirect)
 							w.Write([]byte(""))
 						} else {
-							w.WriteHeader(http.StatusInternalServerError)
-							w.Write([]byte(err.Error()))
+							ce, ok := err.(*direct.ContentError)
+							if ok {
+								w.Header().Add("Content-Type", ce.ContentType)
+								w.Write([]byte(ce.Content))
+							} else {
+								w.WriteHeader(http.StatusInternalServerError)
+								w.Write([]byte(err.Error()))
+							}
 						}
 					} else {
 
