@@ -85,4 +85,5 @@ func Openlib() {
 	})
 
 	UseWithType("^redirect", reflect.TypeOf(Redirect{}))
+	UseWithType("^content", reflect.TypeOf(Content{}))
 }

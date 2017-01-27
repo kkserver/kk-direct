@@ -34,6 +34,19 @@ func NewRedirectError(url string) *RedirectError {
 	return &RedirectError{url}
 }
 
+type ContentError struct {
+	Content     string
+	ContentType string
+}
+
+func (E *ContentError) Error() string {
+	return E.Content
+}
+
+func NewContentError(content string, contentType string) *ContentError {
+	return &ContentError{content, contentType}
+}
+
 type IContext interface {
 	Begin()
 	End()

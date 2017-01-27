@@ -113,11 +113,18 @@ func main() {
 
 			if r.Method == "POST" {
 
-				if r.Header.Get("Content-Type") == "text/json" {
+				ctype := r.Header.Get("Content-Type")
+
+				if strings.Contains(ctype, "text/json") || strings.Contains(ctype, "application/json") {
 					var body = make([]byte, r.ContentLength)
 					_, _ = r.Body.Read(body)
 					defer r.Body.Close()
 					_ = json.Decode(body, input)
+				} else if strings.Contains(ctype, "text/xml") || strings.Contains(ctype, "text/plain") {
+					var body = make([]byte, r.ContentLength)
+					_, _ = r.Body.Read(body)
+					defer r.Body.Close()
+					ctx.Set([]string{"content"}, string(body))
 				} else {
 					r.ParseForm()
 					for key, values := range r.Form {
