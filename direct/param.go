@@ -1,6 +1,7 @@
 package direct
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
@@ -96,6 +97,32 @@ func (D *Param) Exec(ctx IContext) error {
 			return D.Fail(ctx, err)
 		}
 		vv = data
+	case "^joinString":
+
+		field := dynamic.StringValue(dynamic.Get(options, "field"), "_")
+		sep := dynamic.StringValue(dynamic.Get(options, "sep"), ",")
+		b := bytes.NewBuffer(nil)
+		idx := 0
+
+		dynamic.Each(vv, func(key interface{}, value interface{}) bool {
+
+			if idx != 0 {
+				b.WriteString(sep)
+			}
+
+			if field == "_" {
+				b.WriteString(dynamic.StringValue(value, ""))
+			} else {
+				b.WriteString(dynamic.StringValue(dynamic.Get(value, field), ""))
+			}
+
+			idx = idx + 1
+
+			return true
+		})
+
+		vv = b.String()
+
 	default:
 		if strings.HasPrefix(options.Name(), "^day") {
 			now := time.Now()

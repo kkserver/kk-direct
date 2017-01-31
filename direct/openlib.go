@@ -62,6 +62,7 @@ func Openlib() {
 	UseWithType("^datetime", reflect.TypeOf(Param{}))
 	UseWithType("^day", reflect.TypeOf(Param{}))
 	UseWithType("^now", reflect.TypeOf(Param{}))
+	UseWithType("^joinString", reflect.TypeOf(Param{}))
 
 	Use(func(name string, options Options) (IDirect, error) {
 
