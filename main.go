@@ -4,6 +4,7 @@ import (
 	"github.com/kkserver/kk-direct/direct"
 	KK "github.com/kkserver/kk-direct/direct/kk"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
+	"github.com/kkserver/kk-direct/direct/oss"
 	"github.com/kkserver/kk-direct/direct/view"
 	"github.com/kkserver/kk-direct/direct/yaml"
 	"github.com/kkserver/kk-lib/kk"
@@ -20,10 +21,12 @@ import (
 
 type MainApp struct {
 	app.App
-	Client  *client.Service
-	Address string
-	Timeout int
-	Debug   bool
+	Client    *client.Service
+	Address   string
+	Timeout   int
+	MaxMemory int
+	Debug     bool
+	Config    map[string]interface{}
 }
 
 func main() {
@@ -58,6 +61,7 @@ func main() {
 	Lua.Openlib()
 	view.Openlib()
 	KK.Openlib()
+	oss.Openlib()
 	direct.Openlib()
 
 	go func() {
@@ -125,6 +129,16 @@ func main() {
 					_, _ = r.Body.Read(body)
 					defer r.Body.Close()
 					ctx.Set([]string{"content"}, string(body))
+				} else if strings.Contains(ctype, "mutilpart/form-data") {
+					r.ParseMultipartForm(a.MaxMemory)
+					if r.MultipartForm != nil {
+						for key, values := range r.MultipartForm.Value {
+							input[key] = values[0]
+						}
+						for key, values := range r.MultipartForm.File {
+							input[key] = values[0]
+						}
+					}
 				} else {
 					r.ParseForm()
 					for key, values := range r.Form {
