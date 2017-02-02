@@ -24,7 +24,7 @@ type MainApp struct {
 	Client    *client.Service
 	Address   string
 	Timeout   int
-	MaxMemory int
+	MaxMemory int64
 	Debug     bool
 	Config    map[string]interface{}
 }
