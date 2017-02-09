@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/kkserver/kk-direct/direct"
 	KK "github.com/kkserver/kk-direct/direct/kk"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
@@ -110,6 +111,7 @@ func main() {
 
 			ctx.Set(KK.AppKeys, &a)
 			ctx.Set(direct.OutputKeys, map[string]interface{}{})
+			ctx.Set([]string{"config"}, a.Config)
 
 			Lua.ContextOpenlib(ctx)
 
