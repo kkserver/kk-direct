@@ -43,6 +43,9 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 						value = err
 					} else {
 						value = ctx.Get(ResultKeys)
+						if value == Nil {
+							value = nil
+						}
 					}
 					ctx.End()
 					return value
