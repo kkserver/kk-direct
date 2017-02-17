@@ -90,6 +90,13 @@ func (D *Param) Exec(ctx IContext) error {
 		now := time.Now()
 		now = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 		vv = now.Unix()
+	case "^week":
+		now := time.Now()
+		for now.Weekday() != 0 {
+			now = now.AddDate(0, 0, -1)
+		}
+		now = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		vv = now.Unix()
 	case "^json":
 		var data interface{} = nil
 		err := json.Decode([]byte(dynamic.StringValue(vv, "{}")), &data)
@@ -143,6 +150,13 @@ func (D *Param) Exec(ctx IContext) error {
 			vv = date.Unix() + dynamic.IntValue(options.Name()[5:], 0)
 		} else if strings.HasPrefix(options.Name(), "^now") {
 			vv = time.Now().Unix() + dynamic.IntValue(options.Name()[4:], 0)
+		} else if strings.HasPrefix(options.Name(), "^week") {
+			now := time.Now()
+			for now.Weekday() != 0 {
+				now = now.AddDate(0, 0, -1)
+			}
+			now = now.AddDate(0, 0, int(dynamic.IntValue(options.Name()[5:], 0)))
+			vv = now.Unix()
 		}
 	}
 

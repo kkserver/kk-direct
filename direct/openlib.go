@@ -62,6 +62,7 @@ func Openlib() {
 	UseWithType("^datetime", reflect.TypeOf(Param{}))
 	UseWithType("^day", reflect.TypeOf(Param{}))
 	UseWithType("^now", reflect.TypeOf(Param{}))
+	UseWithType("^week", reflect.TypeOf(Param{}))
 	UseWithType("^joinString", reflect.TypeOf(Param{}))
 
 	Use(func(name string, options Options) (IDirect, error) {
@@ -79,6 +80,10 @@ func Openlib() {
 		}
 
 		if strings.HasPrefix(name, "^now") {
+			return &Param{}, nil
+		}
+
+		if strings.HasPrefix(name, "^week") {
 			return &Param{}, nil
 		}
 
