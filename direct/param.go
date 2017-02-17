@@ -51,8 +51,8 @@ func (D *Param) Exec(ctx IContext) error {
 		}
 
 	case "^int":
-		min := dynamic.IntValue(dynamic.Get(options, "min"), math.MinInt64)
-		max := dynamic.IntValue(dynamic.Get(options, "max"), math.MaxInt64)
+		min := dynamic.IntValue(ReflectValue(D.App(), ctx, dynamic.Get(options, "min")), math.MinInt64)
+		max := dynamic.IntValue(ReflectValue(D.App(), ctx, dynamic.Get(options, "max")), math.MaxInt64)
 		vvv := dynamic.IntValue(vv, 0)
 
 		if vvv < min || vvv > max {
@@ -61,8 +61,8 @@ func (D *Param) Exec(ctx IContext) error {
 
 		vv = vvv
 	case "^float":
-		min := dynamic.FloatValue(dynamic.Get(options, "min"), float64(math.MinInt64))
-		max := dynamic.FloatValue(dynamic.Get(options, "max"), math.MaxFloat64)
+		min := dynamic.FloatValue(ReflectValue(D.App(), ctx, dynamic.Get(options, "min")), float64(math.MinInt64))
+		max := dynamic.FloatValue(ReflectValue(D.App(), ctx, dynamic.Get(options, "max")), math.MaxFloat64)
 		vvv := dynamic.FloatValue(vv, 0)
 
 		fmt.Println("^float", vvv, min, max)
