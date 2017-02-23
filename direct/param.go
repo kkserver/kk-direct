@@ -156,6 +156,7 @@ func (D *Param) Exec(ctx IContext) error {
 				now = now.AddDate(0, 0, -1)
 			}
 			now = now.AddDate(0, 0, int(dynamic.IntValue(options.Name()[5:], 0)))
+			now = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 			vv = now.Unix()
 		}
 	}
