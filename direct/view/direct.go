@@ -4,10 +4,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/aarzilli/golua/lua"
 	"github.com/kkserver/kk-direct/direct"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
-	Value "github.com/kkserver/kk-lib/kk/value"
+	"github.com/kkserver/kk-lib/kk/dynamic"
+	"github.com/kkserver/kk-lua/lua"
 	"io"
 	"os"
 	"reflect"
@@ -142,28 +142,27 @@ func (D *Direct) ExecCode(ctx direct.IContext, code string) string {
 
 			if L.LoadString(fmt.Sprintf("return %s", code)) == 0 {
 
-				err := L.Call(0, 1)
-
-				if err != nil {
-					vv = err.Error()
+				if L.Call(0, 1) != 0 {
+					vv = L.ToString(-1)
+					L.Pop(1)
 				} else {
 
 					if L.IsFunction(-1) {
 
-						err = L.Call(0, 1)
+						if L.Call(0, 1) != 0 {
+							vv = L.ToString(-1)
+							L.Pop(1)
 
-						if err != nil {
-							vv = err.Error()
 						} else {
 
-							vv = Lua.LuaToValue(L, -1)
+							vv = L.ToObject(-1)
 
 							L.Pop(1)
 						}
 
 					} else {
 
-						vv = Lua.LuaToValue(L, -1)
+						vv = L.ToObject(-1)
 
 						L.Pop(1)
 					}
@@ -175,7 +174,7 @@ func (D *Direct) ExecCode(ctx direct.IContext, code string) string {
 				L.Pop(1)
 			}
 
-			return Value.StringValue(reflect.ValueOf(vv), "")
+			return dynamic.StringValue(reflect.ValueOf(vv), "")
 		}
 
 	}

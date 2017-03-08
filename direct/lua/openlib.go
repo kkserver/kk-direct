@@ -2,10 +2,10 @@ package lua
 
 import (
 	"database/sql"
-	"github.com/aarzilli/golua/lua"
 	"github.com/kkserver/kk-direct/direct"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
+	"github.com/kkserver/kk-lua/lua"
 	"log"
 	"reflect"
 	"strings"
@@ -18,9 +18,9 @@ var LuaKeys = []string{"lua"}
 func ContextOpenlib(ctx direct.IContext) {
 
 	L := lua.NewState()
-	L.OpenLibs()
+	L.Openlibs()
 
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -31,14 +31,14 @@ func ContextOpenlib(ctx direct.IContext) {
 
 		vv := ctx.Get(keys)
 
-		LuaPushValue(L, vv)
+		L.PushObject(vv)
 
 		return 1
 	})
 
 	L.SetGlobal("get")
 
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -56,7 +56,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 	L.SetGlobal("getString")
 
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -74,7 +74,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 	L.SetGlobal("getInteger")
 
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -92,7 +92,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 	L.SetGlobal("getNumber")
 
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -113,7 +113,7 @@ func ContextOpenlib(ctx direct.IContext) {
 	L.NewTable()
 
 	L.PushString("encode")
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -133,7 +133,7 @@ func ContextOpenlib(ctx direct.IContext) {
 	L.RawSet(-3)
 
 	L.PushString("decode")
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		keys := []string{}
 		top := L.GetTop()
@@ -153,7 +153,7 @@ func ContextOpenlib(ctx direct.IContext) {
 		if err != nil {
 			L.PushString(err.Error())
 		} else {
-			LuaPushValue(L, v)
+			L.PushObject(v)
 		}
 
 		return 1
@@ -165,7 +165,7 @@ func ContextOpenlib(ctx direct.IContext) {
 	L.NewTable()
 
 	L.PushString("query")
-	L.PushGoFunction(func(L *lua.State) int {
+	L.PushFunction(func(L *lua.State) int {
 
 		top := L.GetTop()
 
@@ -189,7 +189,7 @@ func ContextOpenlib(ctx direct.IContext) {
 
 					if err != nil {
 						log.Println("LUA db.query", "fail", err)
-						L.PushGoStruct([]interface{}{})
+						L.NewTable()
 						return 1
 					} else {
 						db.SetMaxIdleConns(6)
@@ -199,14 +199,14 @@ func ContextOpenlib(ctx direct.IContext) {
 
 				} else {
 					log.Println("LUA db.query", "fail", name)
-					L.PushGoStruct([]interface{}{})
+					L.NewTable()
 					return 1
 				}
 
 			}
 
 			for i := 2; i < top; i++ {
-				args = append(args, LuaToValue(L, -top+i))
+				args = append(args, L.ToObject(-top+i))
 			}
 
 			log.Println("SQL", s, args)
@@ -216,20 +216,19 @@ func ContextOpenlib(ctx direct.IContext) {
 			if err != nil {
 				log.Println("LUA db.query", "fail", err)
 				log.Println("SQL", s, args)
-				L.PushGoStruct([]interface{}{})
+				L.NewTable()
 				return 1
 			}
 
 			defer rows.Close()
 
 			var columns []string = nil
-			var rs = []interface{}{}
 
 			columns, err = rows.Columns()
 
 			if err != nil {
 				log.Println("LUA db.query", "fail", err)
-				L.PushGoStruct([]interface{}{})
+				L.NewTable()
 				return 1
 			}
 
@@ -240,36 +239,40 @@ func ContextOpenlib(ctx direct.IContext) {
 				refs[i] = &values[i]
 			}
 
+			L.NewTable()
+
+			idx := int64(1)
+
 			for rows.Next() {
 
 				err = rows.Scan(refs...)
 
 				if err != nil {
 					log.Println("LUA db.query", "fail", err)
-					L.PushGoStruct([]interface{}{})
 					return 1
 				}
 
 				log.Println(values)
 
-				row := map[interface{}]interface{}{}
+				L.PushInteger(idx)
+				L.NewTable()
 
 				for i, name := range columns {
 					vv := values[i]
 					if vv.Valid {
-						row[name] = vv.String
+						L.PushString(name)
+						L.PushString(vv.String)
+						L.RawSet(-3)
 					}
 				}
 
-				rs = append(rs, row)
-			}
+				L.RawSet(-3)
 
-			L.PushGoStruct(rs)
+				idx = idx + 1
+			}
 
 			return 1
 		}
-
-		L.PushGoStruct([]interface{}{})
 
 		return 1
 	})
