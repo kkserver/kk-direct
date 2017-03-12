@@ -10,7 +10,6 @@ import (
 	"github.com/kkserver/kk-lua/lua"
 	"io"
 	"os"
-	"reflect"
 	"regexp"
 )
 
@@ -174,7 +173,7 @@ func (D *Direct) ExecCode(ctx direct.IContext, code string) string {
 				L.Pop(1)
 			}
 
-			return dynamic.StringValue(reflect.ValueOf(vv), "")
+			return dynamic.StringValue(vv, "")
 		}
 
 	}
