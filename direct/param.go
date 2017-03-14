@@ -73,13 +73,13 @@ func (D *Param) Exec(ctx IContext) error {
 
 		vv = vvv
 	case "^date":
-		date, err := time.Parse("2006-01-02", dynamic.StringValue(vv, ""))
+		date, err := time.ParseInLocation("2006-01-02", dynamic.StringValue(vv, ""), time.Local)
 		if err != nil {
 			return D.Fail(ctx, err)
 		}
 		vv = date.Unix()
 	case "^datetime":
-		date, err := time.Parse("2006-01-02 15:04:05", dynamic.StringValue(vv, ""))
+		date, err := time.ParseInLocation("2006-01-02 15:04:05", dynamic.StringValue(vv, ""), time.Local)
 		if err != nil {
 			return D.Fail(ctx, err)
 		}
@@ -137,13 +137,13 @@ func (D *Param) Exec(ctx IContext) error {
 			now = now.AddDate(0, 0, int(dynamic.IntValue(options.Name()[4:], 0)))
 			vv = now.Unix()
 		} else if strings.HasPrefix(options.Name(), "^datetime") {
-			date, err := time.Parse("2006-01-02 15:04:05", dynamic.StringValue(vv, ""))
+			date, err := time.ParseInLocation("2006-01-02 15:04:05", dynamic.StringValue(vv, ""), time.Local)
 			if err != nil {
 				return D.Fail(ctx, err)
 			}
 			vv = date.Unix() + dynamic.IntValue(options.Name()[9:], 0)
 		} else if strings.HasPrefix(options.Name(), "^date") {
-			date, err := time.Parse("2006-01-02", dynamic.StringValue(vv, ""))
+			date, err := time.ParseInLocation("2006-01-02", dynamic.StringValue(vv, ""), time.Local)
 			if err != nil {
 				return D.Fail(ctx, err)
 			}

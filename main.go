@@ -131,7 +131,7 @@ func main() {
 					_, _ = r.Body.Read(body)
 					defer r.Body.Close()
 					ctx.Set([]string{"content"}, string(body))
-				} else if strings.Contains(ctype, "mutilpart/form-data") {
+				} else if strings.Contains(ctype, "multipart/form-data") {
 					r.ParseMultipartForm(a.MaxMemory)
 					if r.MultipartForm != nil {
 						for key, values := range r.MultipartForm.Value {
@@ -400,7 +400,13 @@ func main() {
 
 		log.Println("httpd " + a.Address)
 
-		log.Fatal(http.ListenAndServe(a.Address, nil))
+		srv := &http.Server{
+			ReadTimeout:  20 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			Addr:         a.Address,
+		}
+
+		log.Println(srv.ListenAndServe())
 
 	}()
 

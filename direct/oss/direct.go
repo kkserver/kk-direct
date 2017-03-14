@@ -4,6 +4,7 @@ import (
 	OSS "github.com/aliyun/aliyun-oss-go-sdk/oss"
 	"github.com/kkserver/kk-direct/direct"
 	"github.com/kkserver/kk-lib/kk/dynamic"
+	"log"
 	"mime/multipart"
 )
 
@@ -13,7 +14,7 @@ type Direct struct {
 
 func (D *Direct) Exec(ctx direct.IContext) error {
 
-	options := D.Options()
+	options := dynamic.Get(D.Options(), "options")
 
 	v := direct.ReflectValue(D.App(), ctx, dynamic.Get(options, "file"))
 
@@ -45,9 +46,9 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 				return D.Fail(ctx, err)
 			}
 
-			defer rd.Close()
-
 			err = bucket.PutObject(path, rd)
+
+			log.Println("oss", path, err)
 
 			if err != nil {
 				return D.Fail(ctx, err)
@@ -56,6 +57,8 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 		} else {
 			return D.Fail(ctx, direct.NewError(direct.ERROR_UNKNOWN, "Not multipart/form-data"))
 		}
+	} else {
+		return D.Fail(ctx, direct.NewError(direct.ERROR_UNKNOWN, "Not found file"))
 	}
 
 	return D.Done(ctx, "done")
