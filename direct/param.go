@@ -12,6 +12,7 @@ import (
 )
 
 var ParamKeys = []string{"param"}
+var KeyKeys = []string{"key"}
 
 type Param struct {
 	Direct
@@ -129,6 +130,99 @@ func (D *Param) Exec(ctx IContext) error {
 		})
 
 		vv = b.String()
+	case "^array":
+
+		vs := []interface{}{}
+
+		var each IDirect = nil
+		var err error = nil
+
+		{
+			vvv := dynamic.Get(options, "each")
+			if vvv != nil {
+				o, ok := vvv.(Options)
+				if ok {
+					each, err = D.App().Open(o)
+					if err != nil {
+						return D.Fail(ctx, err)
+					}
+				}
+			}
+		}
+
+		dynamic.Each(vv, func(key interface{}, value interface{}) bool {
+			if each == nil {
+				vs = append(vs, value)
+			} else {
+				ctx.Begin()
+				ctx.Set(ObjectKeys, value)
+				ctx.Set(KeyKeys, key)
+				ctx.Set(OutputKeys, map[interface{}]interface{}{})
+				ctx.Set(ParamKeys, map[interface{}]interface{}{})
+				ctx.Set(ResultKeys, Nil)
+				err = each.Exec(ctx)
+				vvv := ctx.Get(OutputKeys)
+				ctx.End()
+				if err != nil {
+					return false
+				}
+				vs = append(vs, vvv)
+			}
+			return true
+		})
+
+		if err != nil {
+			return D.Fail(ctx, err)
+		}
+
+		vv = vs
+
+	case "^object":
+
+		vs := map[interface{}]interface{}{}
+
+		var each IDirect = nil
+		var err error = nil
+
+		{
+			vvv := dynamic.Get(options, "each")
+			if vvv != nil {
+				o, ok := vvv.(Options)
+				if ok {
+					each, err = D.App().Open(o)
+					if err != nil {
+						return D.Fail(ctx, err)
+					}
+				}
+			}
+		}
+
+		dynamic.Each(vv, func(key interface{}, value interface{}) bool {
+			if each == nil {
+				vs[key] = value
+			} else {
+				ctx.Begin()
+				ctx.Set(ObjectKeys, value)
+				ctx.Set(KeyKeys, key)
+				ctx.Set(OutputKeys, map[interface{}]interface{}{})
+				ctx.Set(ParamKeys, map[interface{}]interface{}{})
+				ctx.Set(ResultKeys, Nil)
+				err = each.Exec(ctx)
+				vvv := ctx.Get(OutputKeys)
+				ctx.End()
+				if err != nil {
+					return false
+				}
+				vs[key] = vvv
+			}
+			return true
+		})
+
+		if err != nil {
+			return D.Fail(ctx, err)
+		}
+
+		vv = vs
 
 	default:
 		if strings.HasPrefix(options.Name(), "^day") {

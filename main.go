@@ -11,6 +11,7 @@ import (
 	"github.com/kkserver/kk-lib/kk"
 	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/app/client"
+	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
 	"log"
 	"net/http"
@@ -110,50 +111,60 @@ func main() {
 			ctx.Begin()
 
 			ctx.Set(KK.AppKeys, &a)
-			ctx.Set(direct.OutputKeys, map[string]interface{}{})
+			ctx.Set(direct.OutputKeys, map[interface{}]interface{}{})
 			ctx.Set([]string{"config"}, a.Config)
 
 			Lua.ContextOpenlib(ctx)
 
-			input := map[string]interface{}{}
+			{
+				var input interface{} = nil
 
-			if r.Method == "POST" {
+				if r.Method == "POST" {
 
-				ctype := r.Header.Get("Content-Type")
+					ctype := r.Header.Get("Content-Type")
 
-				if strings.Contains(ctype, "text/json") || strings.Contains(ctype, "application/json") {
-					var body = make([]byte, r.ContentLength)
-					_, _ = r.Body.Read(body)
-					defer r.Body.Close()
-					_ = json.Decode(body, input)
-				} else if strings.Contains(ctype, "text/xml") || strings.Contains(ctype, "text/plain") {
-					var body = make([]byte, r.ContentLength)
-					_, _ = r.Body.Read(body)
-					defer r.Body.Close()
-					ctx.Set([]string{"content"}, string(body))
-				} else if strings.Contains(ctype, "multipart/form-data") {
-					r.ParseMultipartForm(a.MaxMemory)
-					if r.MultipartForm != nil {
-						for key, values := range r.MultipartForm.Value {
-							input[key] = values[0]
+					if strings.Contains(ctype, "text/json") || strings.Contains(ctype, "application/json") {
+						var body = make([]byte, r.ContentLength)
+						_, _ = r.Body.Read(body)
+						defer r.Body.Close()
+						_ = json.Decode(body, &input)
+					} else if strings.Contains(ctype, "text/xml") || strings.Contains(ctype, "text/plain") {
+						var body = make([]byte, r.ContentLength)
+						_, _ = r.Body.Read(body)
+						defer r.Body.Close()
+						ctx.Set([]string{"content"}, string(body))
+					} else if strings.Contains(ctype, "multipart/form-data") {
+						r.ParseMultipartForm(a.MaxMemory)
+						if r.MultipartForm != nil {
+							input = map[interface{}]interface{}{}
+							for key, values := range r.MultipartForm.Value {
+								dynamic.Set(input, key, values[0])
+							}
+							for key, values := range r.MultipartForm.File {
+								dynamic.Set(input, key, values[0])
+							}
 						}
-						for key, values := range r.MultipartForm.File {
-							input[key] = values[0]
+					} else {
+						r.ParseForm()
+						input = map[interface{}]interface{}{}
+						for key, values := range r.Form {
+							dynamic.Set(input, key, values[0])
 						}
 					}
+
 				} else {
+
 					r.ParseForm()
+
+					input = map[interface{}]interface{}{}
 					for key, values := range r.Form {
-						input[key] = values[0]
+						dynamic.Set(input, key, values[0])
 					}
+
 				}
 
-			} else {
-
-				r.ParseForm()
-
-				for key, values := range r.Form {
-					input[key] = values[0]
+				if input != nil {
+					ctx.Set([]string{"input"}, input)
 				}
 
 			}
@@ -220,7 +231,6 @@ func main() {
 				ctx.Set([]string{"url"}, "http://"+r.Host+r.RequestURI)
 			}
 			ctx.Set([]string{"uri"}, r.RequestURI)
-			ctx.Set([]string{"input"}, input)
 
 			return ctx
 		}
@@ -263,11 +273,11 @@ func main() {
 							} else {
 								ee, ok := err.(*direct.Error)
 								if ok {
-									b, _ := json.Encode(map[string]interface{}{"errno": ee.Errno, "errmsg": ee.Errmsg})
+									b, _ := json.Encode(map[interface{}]interface{}{"errno": ee.Errno, "errmsg": ee.Errmsg})
 									w.Header().Add("Content-Type", "application/json; charset=utf-8")
 									w.Write(b)
 								} else {
-									b, _ := json.Encode(map[string]interface{}{"errno": direct.ERROR_UNKNOWN, "errmsg": err.Error()})
+									b, _ := json.Encode(map[interface{}]interface{}{"errno": direct.ERROR_UNKNOWN, "errmsg": err.Error()})
 									w.Header().Add("Content-Type", "application/json; charset=utf-8")
 									w.Write(b)
 								}

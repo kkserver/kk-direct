@@ -44,8 +44,11 @@ func (C *Context) Get(keys []string) interface{} {
 		}
 		for idx >= 0 {
 			vs := C.values[idx]
-			v := dynamic.GetWithKeys(vs, keys[ikey:])
+			v := dynamic.Get(vs, keys[ikey])
 			if v != nil {
+				if ikey+1 < len(keys) {
+					return dynamic.GetWithKeys(v, keys[ikey+1:])
+				}
 				return v
 			}
 			idx = idx - 1
