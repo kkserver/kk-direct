@@ -105,6 +105,12 @@ func (D *Param) Exec(ctx IContext) error {
 			return D.Fail(ctx, err)
 		}
 		vv = data
+	case "^jsonString":
+		b, err := json.Encode(vv)
+		if err != nil {
+			return D.Fail(ctx, err)
+		}
+		vv = string(b)
 	case "^joinString":
 
 		field := dynamic.StringValue(dynamic.Get(options, "field"), "_")

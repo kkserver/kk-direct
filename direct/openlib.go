@@ -58,6 +58,7 @@ func Openlib() {
 	UseWithType("^int", reflect.TypeOf(Param{}))
 	UseWithType("^float", reflect.TypeOf(Param{}))
 	UseWithType("^json", reflect.TypeOf(Param{}))
+	UseWithType("^jsonString", reflect.TypeOf(Param{}))
 	UseWithType("^date", reflect.TypeOf(Param{}))
 	UseWithType("^datetime", reflect.TypeOf(Param{}))
 	UseWithType("^day", reflect.TypeOf(Param{}))

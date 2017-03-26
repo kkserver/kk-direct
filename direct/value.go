@@ -55,7 +55,7 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 
 		{
 			switch reflect.ValueOf(value).Kind() {
-			case reflect.Map, reflect.Slice, reflect.Ptr:
+			case reflect.Map, reflect.Ptr:
 				vv := map[interface{}]interface{}{}
 
 				dynamic.Each(value, func(key interface{}, value interface{}) bool {
@@ -67,6 +67,16 @@ func ReflectValue(app IApp, ctx IContext, value interface{}) interface{} {
 					} else {
 						vv[key] = ReflectValue(app, ctx, value)
 					}
+					return true
+				})
+
+				return vv
+			case reflect.Slice:
+
+				vv := []interface{}{}
+
+				dynamic.Each(value, func(key interface{}, value interface{}) bool {
+					vv = append(vv, ReflectValue(app, ctx, value))
 					return true
 				})
 
