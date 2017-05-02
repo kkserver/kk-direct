@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	_ "github.com/go-sql-driver/mysql"
+	Y "github.com/go-yaml/yaml"
 	"github.com/kkserver/kk-direct/direct"
 	KK "github.com/kkserver/kk-direct/direct/kk"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
@@ -13,9 +15,11 @@ import (
 	"github.com/kkserver/kk-lib/kk/app/client"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -349,6 +353,87 @@ func main() {
 
 					}
 				}
+			} else if strings.HasSuffix(r.URL.Path, "*.doc") {
+
+				root := "./web" + r.URL.Path[0:len(r.URL.Path)-5]
+
+				items := []interface{}{}
+
+				err := filepath.Walk(root, func(path string, info os.FileInfo, err error) error {
+
+					if err != nil {
+						return err
+					}
+
+					if !info.IsDir() {
+						if strings.HasSuffix(path, ".yaml") {
+							v, _ := filepath.Rel(root, path)
+							items = append(items, v[0:len(v)-5]+".doc")
+						}
+					}
+
+					return nil
+				})
+
+				if err != nil {
+					w.WriteHeader(http.StatusNotFound)
+					w.Write([]byte(err.Error()))
+				} else {
+					data, _ := json.Encode(map[interface{}]interface{}{"items": items})
+					w.Header().Add("Content-Type", "application/json; charset=utf-8")
+					w.Write(data)
+				}
+
+			} else if strings.HasSuffix(r.URL.Path, ".doc") {
+
+				path := "./web" + r.URL.Path[0:len(r.URL.Path)-4] + ".yaml"
+
+				err := func() error {
+
+					fd, err := os.Open(path)
+
+					if err != nil {
+						return err
+					}
+
+					defer fd.Close()
+
+					rd := bufio.NewReader(fd)
+
+					data, err := rd.ReadBytes(0)
+
+					if err != nil && err != io.EOF {
+						return err
+					}
+
+					options := direct.Options{}
+
+					err = Y.Unmarshal(data, options)
+
+					if err != nil {
+						return err
+					}
+
+					data, err = json.Encode(dynamic.Get(options, "doc"))
+
+					if err != nil {
+						return err
+					}
+
+					return direct.NewContentError(string(data), "application/json; charset=utf-8")
+
+				}()
+
+				v, ok := err.(*direct.ContentError)
+
+				if ok {
+					w.Header().Add("Content-Type", v.ContentType)
+					w.Write([]byte(v.Content))
+				} else {
+					w.WriteHeader(http.StatusNotFound)
+					w.Write([]byte(err.Error()))
+				}
+
 			} else if strings.HasSuffix(r.URL.Path, "/") {
 
 				path := "./web" + r.URL.Path + "index.yaml"
