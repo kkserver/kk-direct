@@ -86,7 +86,7 @@ func (a *App) GetContext(w http.ResponseWriter, r *http.Request) direct.IContext
 
 	ctx.Begin()
 
-	ctx.Set(KK.AppKeys, &a)
+	ctx.Set(KK.AppKeys, a)
 	ctx.Set(direct.OutputKeys, map[interface{}]interface{}{})
 	ctx.Set([]string{"config"}, a.Config)
 
