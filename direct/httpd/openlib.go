@@ -5,6 +5,7 @@ import (
 	KK "github.com/kkserver/kk-direct/direct/kk"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
 	"github.com/kkserver/kk-direct/direct/oss"
+	"github.com/kkserver/kk-direct/direct/upload"
 	"github.com/kkserver/kk-direct/direct/view"
 	"github.com/kkserver/kk-direct/direct/yaml"
 )
@@ -16,4 +17,5 @@ func Openlib() {
 	KK.Openlib()
 	oss.Openlib()
 	direct.Openlib()
+	upload.Openlib()
 }
