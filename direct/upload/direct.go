@@ -34,7 +34,7 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 
 			defer rd.Close()
 
-			wf, err := os.OpenFile(path, os.O_CREATE, 0666)
+			wf, err := os.Create(path)
 
 			if err != nil {
 				return D.Fail(ctx, err)
