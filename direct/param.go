@@ -3,6 +3,7 @@ package direct
 import (
 	"bytes"
 	"fmt"
+	"github.com/kkserver/kk-lib/kk"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
 	"math"
@@ -229,7 +230,8 @@ func (D *Param) Exec(ctx IContext) error {
 		}
 
 		vv = vs
-
+	case "^uuid":
+		vv = kk.UUID()
 	default:
 		if strings.HasPrefix(options.Name(), "^day") {
 			now := time.Now()

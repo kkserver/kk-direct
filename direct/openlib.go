@@ -67,6 +67,7 @@ func Openlib() {
 	UseWithType("^joinString", reflect.TypeOf(Param{}))
 	UseWithType("^array", reflect.TypeOf(Param{}))
 	UseWithType("^object", reflect.TypeOf(Param{}))
+	UseWithType("^uuid", reflect.TypeOf(Param{}))
 
 	Use(func(name string, options Options) (IDirect, error) {
 
