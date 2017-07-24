@@ -2,7 +2,6 @@ package http
 
 import (
 	"github.com/kkserver/kk-direct/direct"
-	"reflect"
 	"strings"
 )
 

@@ -2,6 +2,7 @@ package httpd
 
 import (
 	"github.com/kkserver/kk-direct/direct"
+	"github.com/kkserver/kk-direct/direct/http"
 	KK "github.com/kkserver/kk-direct/direct/kk"
 	Lua "github.com/kkserver/kk-direct/direct/lua"
 	"github.com/kkserver/kk-direct/direct/oss"
@@ -18,4 +19,5 @@ func Openlib() {
 	oss.Openlib()
 	direct.Openlib()
 	upload.Openlib()
+	http.Openlib()
 }

@@ -5,15 +5,15 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"errors"
+	"fmt"
 	"github.com/kkserver/kk-direct/direct"
-	"github.com/kkserver/kk-lib/kk/app"
 	"github.com/kkserver/kk-lib/kk/dynamic"
 	"github.com/kkserver/kk-lib/kk/json"
+	"io"
 	"log"
 	xhttp "net/http"
 	xurl "net/url"
 	"strings"
-	"time"
 )
 
 var ResultKeys = []string{"result"}
@@ -43,6 +43,8 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 	method := dynamic.StringValue(dynamic.Get(options, "method"), "GET")
 	stype := dynamic.StringValue(dynamic.Get(options, "type"), "application/x-www-form-urlencoded")
 	responseType := dynamic.StringValue(dynamic.Get(options, "responseType"), "json")
+
+	log.Println(url)
 
 	data := direct.ReflectValue(D.App(), ctx, dynamic.Get(options, "options"))
 
@@ -84,7 +86,7 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 			body = b.Bytes()
 		}
 
-		resp, err = client.Post(url, stype+"; charset=utf-8", body)
+		resp, err = client.Post(url, stype+"; charset=utf-8", bytes.NewReader(body))
 
 	} else {
 
@@ -127,26 +129,41 @@ func (D *Direct) Exec(ctx direct.IContext) error {
 	}
 
 	if resp.StatusCode == 200 {
-		var body = make([]byte, resp.ContentLength)
-		_, _ = resp.Body.Read(body)
-		defer resp.Body.Close()
+
+		b := bytes.NewBuffer(nil)
+
+		_, err = b.ReadFrom(resp.Body)
+
+		resp.Body.Close()
+
+		if err != nil && err != io.EOF {
+			return err
+		}
 
 		if responseType == "json" {
-			data := map[interface{}]interface{}{}
-			err := json.Decode(body, data)
+			var data interface{} = nil
+			err := json.Decode(b.Bytes(), &data)
 			if err != nil {
 				return D.Fail(ctx, err)
 			}
 			ctx.Set(ResultKeys, data)
 		} else {
-			ctx.Set(ResultKeys, string(body))
+			ctx.Set(ResultKeys, b.String())
 		}
 
 	} else {
-		var body = make([]byte, resp.ContentLength)
-		_, _ = resp.Body.Read(body)
-		defer resp.Body.Close()
-		return D.Fail(ctx, errors.New(fmt.Sprintf("[%d] %s", resp.StatusCode, string(body))))
+
+		b := bytes.NewBuffer(nil)
+
+		_, err = b.ReadFrom(resp.Body)
+
+		resp.Body.Close()
+
+		if err != nil && err != io.EOF {
+			return err
+		}
+
+		return D.Fail(ctx, errors.New(fmt.Sprintf("[%d] %s", resp.StatusCode, b.String())))
 	}
 
 	return D.Done(ctx, "done")
